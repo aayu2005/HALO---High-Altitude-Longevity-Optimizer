@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ladakh Thermal Protection Enclosure – 3D</title>
+<style>
+:root{box-sizing:border-box;--bg:#0c1720;--fg:#e8f1f5;--chip:rgba(12,23,32,.78);--line:#5fd0e6;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#dfe9ee;--fg:#10232d;--chip:rgba(255,255,255,.8);--line:#0a7f99}}
+:root[data-theme="dark"]{--bg:#0c1720;--fg:#e8f1f5;--chip:rgba(12,23,32,.78);--line:#5fd0e6}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS",Verdana,sans-serif;overflow:hidden}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+h1{position:absolute;left:16px;top:calc(12px + env(safe-area-inset-top,0px));margin:0;font-size:calc(var(--u)*1.9);line-height:1.2;font-weight:700;max-width:92%}
+.bar{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;flex-wrap:wrap}
+button{background:var(--chip);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:calc(var(--u)*.6) calc(var(--u)*.9);font:inherit;font-size:calc(var(--u)*1.05);cursor:pointer}
+button.on{background:var(--line);color:#001018}
+button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.lb{position:absolute;left:0;top:0;font-size:calc(var(--u)*1.0);white-space:nowrap;background:var(--chip);border:1px solid var(--line);padding:2px 7px;border-radius:4px;pointer-events:auto;cursor:pointer;transform:translate(-50%,-130%)}
+.hint{position:absolute;right:12px;top:calc(var(--u)*5.6);font-size:calc(var(--u)*.95);opacity:.7;text-align:right;max-width:60%}
+#info{display:none;position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px));max-width:80%;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:calc(var(--u)*1.1);line-height:1.5;cursor:pointer}#stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(127,127,127,.25)}</style></head><body>
+<div id="stage"><canvas id="c"></canvas>
+<h1>High-Altitude Electronics Thermal Protection Enclosure – Ladakh</h1>
+<div id="ui"><div class="bar"><button id="bL" class="on">Labels</button><button id="bR" class="on">Auto-rotate</button><button id="bF" class="on">Coolant flow</button><button id="bX">Cutaway walls</button><button id="bH">Hide UI</button></div>
+<div class="hint">Drag to orbit · tap a label · double-tap or H hides controls</div></div><div id="info"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const dark=!matchMedia('(prefers-color-scheme: light)').matches;
+const cv=document.getElementById('c'),stage=document.getElementById('stage'),ui=document.getElementById('ui');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.toneMapping=THREE.LinearToneMapping;R.toneMappingExposure=1.0;R.outputEncoding=THREE.sRGBEncoding;
+const S=new THREE.Scene();S.background=new THREE.Color(dark?0x07121b:0xdfe9ee);S.fog=new THREE.Fog(S.background,28,60);
+const cam=new THREE.PerspectiveCamera(40,1,.1,100);cam.position.set(21.2,17,0);
+const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.target.set(1.5,1.4,0);ctl.autoRotate=false;ctl.minDistance=8;let sway=true,lastOff=0;ctl.maxPolarAngle=Math.PI*.49;
+
+// environment map for reflections (procedural studio)
+const envS=new THREE.Scene();envS.background=new THREE.Color(0x203040);
+[[0,12,0,14,1],[12,4,0,1,8],[-12,4,6,1,8],[0,3,-12,12,6]].forEach(a=>{const m=new THREE.Mesh(new THREE.BoxGeometry(a[3],a[4]||1,a[3]),new THREE.MeshBasicMaterial({color:0xffffff}));m.position.set(a[0],a[1],a[2]);envS.add(m)});
+const pm=new THREE.PMREMGenerator(R);const env=pm.fromScene(envS,.04).texture;S.environment=env;
+
+S.add(new THREE.HemisphereLight(0xa8cfff,0x1a1208,.3));
+const sun=new THREE.DirectionalLight(0xfff0dc,1.35);sun.position.set(8,14,6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14});S.add(sun);
+const rim=new THREE.PointLight(0xff9a50,1.2,20);rim.position.set(-6,4,3);S.add(rim);
+
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.45,metalness:.1,envMapIntensity:.8},o));
+const glass=(o={})=>new THREE.MeshPhysicalMaterial(Object.assign({color:0x7fc4dc,roughness:.05,metalness:0,transparent:true,opacity:.13,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:.9,depthWrite:false,side:THREE.DoubleSide},o));
+function box(w,h,d,mat,x,y,z,p=S,sh=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=sh;m.receiveShadow=true;p.add(m);return m}
+
+// ground
+const gr=new THREE.Mesh(new THREE.CircleGeometry(30,64),new THREE.MeshStandardMaterial({color:dark?0x0d1a24:0xc9d8df,roughness:.9}));gr.rotation.x=-Math.PI/2;gr.position.y=-.2;gr.receiveShadow=true;S.add(gr);
+
+const $=id=>document.getElementById(id);const E=new THREE.Group();S.add(E);
+// enclosure shell (polycarbonate)
+const pc=glass({color:0x5fb4d2});const walls=[];
+box(10.4,.3,6.4,glass({opacity:.3}),0,-.05,0,E,false);
+walls.push(box(10.4,4,.2,pc,0,2,-3.1,E,false),box(10.4,4,.2,pc,0,2,3.1,E,false),box(.2,4,6,pc,-5.1,2,0,E,false),box(.2,4,6,pc,5.1,2,0,E,false));
+// rim flange + corner screws
+const fl=new THREE.Mesh(new THREE.TorusGeometry(1,.02,4,4),M(0));
+[[-5.1,-3.1],[5.1,-3.1],[-5.1,3.1],[5.1,3.1]].forEach(p=>{const s=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.12,20),M(0x9aa7ae,{metalness:.9,roughness:.3}));s.position.set(p[0]*.98,4.05,p[1]*.98);E.add(s)});
+[[0,4.02,-3.1,10.5,.12,.3],[0,4.02,3.1,10.5,.12,.3],[-5.1,4.02,0,.3,.12,6.3],[5.1,4.02,0,.3,.12,6.3]].forEach(a=>box(a[3],a[4],a[5],glass({opacity:.35}),a[0],a[1],a[2],E,false));
+
+// film heaters (polyamide, copper-orange)
+const hm=M(0xe0600a,{roughness:.35,metalness:.5,emissive:0x8a2a00,emissiveIntensity:.45});
+box(9.6,3,.04,hm,0,2.1,-2.95,E);box(.04,3,5.4,hm,-4.95,2.1,0,E);box(.04,3,5.4,hm,4.95,2.1,0,E);box(9.6,.04,5.6,hm,0,.13,0,E,false);
+// gold trace lines on heater
+const tm=M(0xffd28a,{metalness:1,roughness:.25});for(let i=0;i<9;i++)box(.04,2.6,.02,tm,-4.4+i*1.1,2.1,-2.92,E,false);
+
+// coolant loop
+const P=[[-4.4,1.9,-2.5],[0,1.9,-2.5],[4.2,1.9,-2.5],[4.5,1.9,-1.7],[6,1.9,-1.4],[7.3,2.3,-1.2],[7.3,.9,1.3],[6.6,.8,2.4],[5.8,.8,2.4],[4.4,.8,2.5],[0,.8,2.5],[-4.2,.8,2.5],[-4.5,1.2,1.5],[-4.5,1.9,-1],[-4.4,1.9,-2.5]].map(a=>new THREE.Vector3(...a));
+const curve=new THREE.CatmullRomCurve3(P,false,'centripetal');
+const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,360,.2,16,false),glass({opacity:.28,envMapIntensity:2}));E.add(tube);
+const oil=new THREE.Mesh(new THREE.TubeGeometry(curve,360,.14,12,false),M(0xff7a10,{transparent:true,opacity:.85,emissive:0xff5a00,emissiveIntensity:.7,roughness:.2}));E.add(oil);
+// fittings
+const fm=M(0x59636a,{metalness:.9,roughness:.35});
+[[-4.4,1.9,-2.5,0],[5.1,1.9,-1.5,0],[5.1,.8,2.45,0]].forEach(a=>{const f=new THREE.Mesh(new THREE.CylinderGeometry(.26,.26,.5,6),fm);f.rotation.z=Math.PI/2;f.position.set(a[0],a[1],a[2]);E.add(f)});
+// flow particles
+const parts=[];const pg=new THREE.SphereGeometry(.11,10,10),pmat=new THREE.MeshBasicMaterial({color:0xffe0b0});
+for(let i=0;i<44;i++){const m=new THREE.Mesh(pg,pmat);E.add(m);parts.push({m,t:i/44})}
+
+// radiator
+const rad=new THREE.Group();rad.position.set(7.3,1.6,0);E.add(rad);
+box(.7,3.4,3.2,M(0x4a545c,{metalness:.8,roughness:.4}),0,0,0,rad);
+for(let i=0;i<16;i++)box(.5,3.1,.07,M(0x1a2228,{metalness:.6,roughness:.5}),.18,0,-1.4+i*.187,rad);
+box(.15,3.0,2.9,M(0x2c363d),-.35,0,0,rad,false);
+
+// pump
+const pump=new THREE.Group();pump.position.set(6.1,.8,2.4);E.add(pump);
+const pb=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.7,32),M(0x5a646b,{metalness:.9,roughness:.3}));pb.rotation.x=Math.PI/2;pump.add(pb);
+const pr=new THREE.Mesh(new THREE.TorusGeometry(.4,.07,12,32),M(0x20272c));pr.position.z=.38;pump.add(pr);
+const imp=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.12,6),M(0xb8c2c8,{metalness:1,roughness:.2}));imp.rotation.x=Math.PI/2;imp.position.z=.42;pump.add(imp);
+
+// electronics
+const ele=new THREE.Group();ele.position.y=.3;E.add(ele);
+box(3.4,.12,2.2,M(0x087a30,{roughness:.4}),0,.5,0,ele); // PCB
+[[-1.5,-.9],[1.5,-.9],[-1.5,.9],[1.5,.9]].forEach(p=>box(.18,.4,.18,M(0xcfd6da,{metalness:.8}),p[0],.24,p[1],ele));
+box(.5,.15,.4,M(0xd8dde0,{metalness:1,roughness:.3}),-1.0,.65,1.05,ele);         // micro-USB
+box(.8,.1,.7,M(0x1048d8,{roughness:.4}),.5,.62,-.5,ele);                         // LoRa module
+box(.5,.14,.5,M(0x9aa3a8,{metalness:.9}),.9,.64,.7,ele);                         // SD / USB
+for(let i=0;i<6;i++)box(.16,.07,.16,M(0x151515),-.2+i*.28,.6,.7,ele);             // ICs
+box(.35,.16,.35,M(0x2a2a2a),1.4,.65,-.1,ele);
+const gold=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.18,24),M(0xe0a020,{metalness:1,roughness:.2}));gold.position.set(.3,.65,.3);ele.add(gold);
+// antenna
+const ant=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,3.4,16),M(0x0b0b0c,{roughness:.55}));ant.position.set(.3,2.4,.3);ant.castShadow=true;E.add(ant);
+const ab=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.5,16),M(0x161616,{roughness:.5}));ab.position.set(.3,1.15,.3);E.add(ab);
+// battery
+box(1.9,.6,1.3,M(0x1a1a1c,{roughness:.5}),3.3,.55,.1,E);box(1.9,.1,1.3,M(0xf5b800,{roughness:.4}),3.3,.9,.1,E);
+// acrylic plate on standoffs
+box(2.3,.06,1.9,glass({opacity:.35}),-3.6,.75,0,E,false);[[-4.5,-.8],[-2.7,-.8],[-4.5,.8],[-2.7,.8]].forEach(p=>box(.12,.55,.12,M(0xdde6ea,{transparent:true,opacity:.7}),p[0],.5,p[1],E,false));
+// sensors board
+box(1.2,.1,.45,M(0x2b2f33),1.5,.3,2.0,E);box(.3,.2,.3,M(0x888),1.2,.45,2.0,E);box(.3,.2,.3,M(0x111),1.8,.45,2.0,E);
+
+// ---------- extra detail ----------
+function tex(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
+function plane(w,d,t,x,y,z,p,o={}){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshStandardMaterial(Object.assign({map:t,transparent:true,roughness:.5},o)));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);p.add(m);return m}
+const leds=[];
+// PCB traces + silkscreen
+plane(3.4,2.2,tex(680,440,(g,w,h)=>{g.strokeStyle='#3fbf72';g.lineWidth=3;for(let i=0;i<30;i++){g.beginPath();const y=20+i*13;g.moveTo(10,y);g.lineTo(60+Math.random()*500,y);g.lineTo(100+Math.random()*560,y+(i%2?25:-25));g.stroke()}
+ g.fillStyle='#e6c25a';for(let i=0;i<40;i++){g.beginPath();g.arc(20+(i%20)*33,i<20?14:426,5,0,7);g.fill()}
+ g.fillStyle='#f4f4f0';g.font='bold 18px monospace';g.fillText('LADAKH-NODE v2',470,410);g.fillText('GND 3V3 NRST BOOT0',30,60)}),0,.566,0,ele);
+// STM32 microcontroller (LQFP64)
+const CX=-1.0,CZ=-.2;
+box(.9,.1,.9,M(0x0d0d10,{roughness:.55,metalness:.15}),CX,.62,CZ,ele);
+for(let i=0;i<16;i++){const o=-.41+i*.0547;[[o,-.49],[o,.49]].forEach(q=>box(.035,.025,.12,M(0xc9ced2,{metalness:1,roughness:.25}),CX+q[0],.585,CZ+q[1],ele,false));[[-.49,o],[.49,o]].forEach(q=>box(.12,.025,.035,M(0xc9ced2,{metalness:1,roughness:.25}),CX+q[0],.585,CZ+q[1],ele,false))}
+plane(.88,.88,tex(256,256,(g)=>{g.fillStyle='#0d0d10';g.fillRect(0,0,256,256);g.fillStyle='#d9dde0';g.font='bold 30px sans-serif';g.fillText('STM32',24,80);g.font='bold 24px sans-serif';g.fillText('L476RGT6',24,115);g.font='15px monospace';g.fillText('ARM Cortex-M4',24,150);g.fillText('ULTRA-LOW-POWER',24,172);g.fillText('GH 6 3 5',24,200);g.fillStyle='#8a9096';g.beginPath();g.arc(228,228,9,0,7);g.fill()}),CX,.673,CZ,ele,{roughness:.5});
+[[-.55,-.55],[.55,-.55],[-.55,.55],[.55,.55]].forEach(q=>box(.12,.06,.08,M(0xb98a3c,{roughness:.5}),CX+q[0],.6,CZ+q[1],ele,false));
+const xt=box(.3,.07,.12,M(0xc9d1d6,{metalness:1,roughness:.2}),CX-.9,.6,CZ+.1,ele,false);
+for(let i=0;i<5;i++){const h=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.3,8),M(0xe0b84a,{metalness:1,roughness:.2}));h.position.set(CX-.28+i*.14,.7,-1.0);ele.add(h);box(.12,.1,.12,M(0x151515),CX-.28+i*.14,.62,-1.0,ele,false)}
+// pin headers
+for(let i=0;i<11;i++){const x=-.2+i*.16;box(.14,.12,.14,M(0x151515),x,.62,-1.02,ele,false);const p=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.34,8),M(0xe0b84a,{metalness:1,roughness:.2}));p.position.set(x,.76,-1.02);ele.add(p)}
+// capacitors, resistors, crystal, LEDs
+[[-2.3,.8],[-2.1,.8],[-1.9,.8],[1.2,.8],[1.45,.75]].forEach((a,i)=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.2+i%2*.1,16),M(i%2?0x1b1b1d:0xb9c0c5,{metalness:.7,roughness:.35}));c.position.set(a[0],.67,a[1]);ele.add(c)});
+for(let i=0;i<8;i++)box(.1,.04,.05,M(0xe9dfc2,{roughness:.6}),-2.4+i*.12,.6,-.7,ele,false);
+box(.22,.07,.1,M(0xc5ccd1,{metalness:1,roughness:.25}),-.1,.62,.2,ele,false);
+[[0xff2a2a,-.5],[0x2aff6a,-.3]].forEach(a=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.1,.06,.06),new THREE.MeshStandardMaterial({color:a[0],emissive:a[0],emissiveIntensity:1.5}));l.position.set(a[1],.62,.95);ele.add(l);leds.push(l)});
+// LoRa RF shield can + coax pigtail
+box(.5,.09,.4,M(0xc9d1d6,{metalness:.95,roughness:.22}),.5,.72,-.5,ele,false);
+const cx=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(.85,.7,-.5),new THREE.Vector3(1.0,1.2,-.3),new THREE.Vector3(.7,1.35,.1),new THREE.Vector3(.3,1.0,.3)].map(v=>v.add(new THREE.Vector3(0,.3,0)))),30,.025,8),M(0x2e3236));E.add(cx);
+// antenna details: SMA hex nut, gold pin, ribs
+box(.4,.14,.4,M(0xe0a020,{metalness:1,roughness:.18}),.3,1.45,.3,E,false);
+for(let i=0;i<10;i++){const r=new THREE.Mesh(new THREE.TorusGeometry(.12,.012,6,16),M(0x2a2a2d));r.rotation.x=Math.PI/2;r.position.set(.3,1.7+i*.22,.3);E.add(r)}
+const tip=new THREE.Mesh(new THREE.SphereGeometry(.09,16,16),M(0x0b0b0c));tip.position.set(.3,4.1,.3);E.add(tip);
+// battery label, wires, connector
+plane(1.7,1.1,tex(340,220,(g)=>{g.fillStyle='#e0b800';g.fillRect(0,0,340,220);g.fillStyle='#111';g.font='bold 34px sans-serif';g.fillText('Li-Po 3.7V',24,70);g.font='bold 28px sans-serif';g.fillText('5000 mAh  18.5Wh',24,120);g.font='16px monospace';g.fillText('PROTECTION: ON   -20~60C',24,170)}),3.3,.956,.1,E);
+[[0xd11a1a,-.1],[0x111111,.1]].forEach(a=>{const w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(2.35,.7,.1+a[1]),new THREE.Vector3(2.0,1.1,.1+a[1]),new THREE.Vector3(1.6,.95,.1+a[1])]),20,.035,8),M(a[0]));E.add(w)});
+box(.25,.18,.3,M(0xeeeeee),1.55,.9,.1,E,false);
+// heater bus bar + lead wires
+box(9.6,.1,.05,M(0xc8601c,{metalness:1,roughness:.2}),0,3.55,-2.93,E,false);
+[[0xd11a1a,-4.7,-1.2],[0x111111,-4.5,-.9]].forEach(a=>{const w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(a[1],3.55,-2.9),new THREE.Vector3(a[1],3.9,-1.8),new THREE.Vector3(a[1]+1.2,2.6,-1.4),new THREE.Vector3(-2.2,.95,a[2]*.3-.2)]),40,.03,8),M(a[0]));E.add(w)});
+// hose clamps
+[.06,.2,.33,.5,.62,.75,.9].forEach(t=>{const c=new THREE.Mesh(new THREE.TorusGeometry(.24,.035,8,20),M(0xb7c0c6,{metalness:1,roughness:.2}));c.position.copy(curve.getPointAt(t));c.lookAt(curve.getPointAt(t).add(curve.getTangentAt(t)));E.add(c)});
+// radiator frame + tanks
+[1.7,-1.7].forEach(y=>box(.9,.22,3.4,M(0x0f86b8,{metalness:.8,roughness:.3}),0,y,0,rad));
+[1.6,-1.6].forEach(z=>box(.9,3.4,.12,M(0x0f86b8,{metalness:.8,roughness:.3}),0,0,z,rad));
+// pump bolts
+for(let i=0;i<6;i++){const b=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.06,6),M(0xd0d6da,{metalness:1,roughness:.2}));const a=i/6*6.283;b.rotation.x=Math.PI/2;b.position.set(Math.cos(a)*.48,Math.sin(a)*.48,.37);pump.add(b)}
+const pw=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(6.1,.3,2.9),new THREE.Vector3(5.2,.3,3.0),new THREE.Vector3(4.2,.25,2.2),new THREE.Vector3(3.0,.3,1.5)]),30,.04,8),M(0xd11a1a));E.add(pw);
+// sensors detail: BME280 can + DS18B20 probe
+box(.3,.1,.3,M(0xd6dadd,{metalness:1,roughness:.2}),1.2,.6,2.0,E,false);
+const ds=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.4,12),M(0x111));ds.position.set(1.85,.65,2.0);E.add(ds);
+// gasket + rubber feet
+[[0,3.93,-3.1,10.3,.1,.3],[0,3.93,3.1,10.3,.1,.3],[-5.1,3.93,0,.3,.1,6.1],[5.1,3.93,0,.3,.1,6.1]].forEach(a=>box(a[3],a[4],a[5],M(0x101214,{roughness:.9}),a[0],a[1],a[2],E,false));
+[[-4.6,-2.7],[4.6,-2.7],[-4.6,2.7],[4.6,2.7]].forEach(p=>{const f=new THREE.Mesh(new THREE.CylinderGeometry(.3,.35,.14,20),M(0x111314,{roughness:.95}));f.position.set(p[0],-.13,p[1]);E.add(f)});
+// acrylic plate screws
+[[-4.5,-.8],[-2.7,-.8],[-4.5,.8],[-2.7,.8]].forEach(p=>{const s=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.05,12),M(0xc9d1d6,{metalness:1,roughness:.2}));s.position.set(p[0],.81,p[1]);E.add(s)});
+
+// ---------- part list (indicative specs) ----------
+const L=[
+["Polycarbonate shell",-5.1,4.3,3.1,"UV-stabilised polycarbonate, ~4 mm walls. Strong, light, stays tough in deep cold."],
+["Gasket seal",5.1,4.0,-3.1,"Silicone rubber gasket under the lid line. Keeps dust and moisture out."],
+["Polyamide film heater",-5,3.2,0,"Thin etched-copper heater film on the walls and floor, thermostat-controlled by the STM32."],
+["Heater bus bar + leads",-2.5,3.7,-2.9,"Copper bus bar feeds the heater film; red/black leads run to the control board."],
+["Coolant inlet",-4.4,2.4,-2.5,"Barbed fitting where fluid enters the cooling wall loop."],
+["Coolant outlet",5.2,2.4,-1.5,"Fluid leaves the enclosure toward the radiator."],
+["Silicone oil coolant",-2,.35,2.5,"Low-freezing, non-conductive silicone oil, so a leak will not short the electronics."],
+["Hose clamps",.8,2.3,-2.5,"Stainless clamps secure the clear tubing at each joint."],
+["Radiator / heat exchanger",7.3,3.7,0,"Finned aluminium core with frame. Sheds excess heat on sunny days."],
+["Circulation pump",6.1,1.5,2.4,"12 V DC mini pump with 6 mounting bolts. Moves oil around the loop."],
+["STM32 microcontroller",-1.9,1.7,.2,"STM32L476RG (Arm Cortex-M4, ultra-low-power, -40 to 85 C) in an LQFP64 package. Runs heater and pump control, sensor reading and the LoRa link."],
+["SWD debug header",-1.3,1.35,-1.0,"5-pin SWD header for flashing and debugging the STM32 with an ST-Link."],
+["Micro-USB port",-1.3,1.0,1.4,"USB port for power and firmware updates."],
+["LoRa module",.8,1.5,-.4,"SX127x LoRa radio (865 MHz band in India) with RF shield can and coax pigtail."],
+["LoRa antenna",.3,4.4,.3,"2 dBi whip antenna on an SMA connector, mounted in the central RF zone."],
+["Li-Po battery",3.3,1.3,.1,"3.7 V 5000 mAh pack with protection board. Kept warm by the loop."],
+["Environmental sensors",1.5,1.0,2.0,"BME280 (temperature, humidity, pressure) and a DS18B20 coolant-temperature probe."],
+["Acrylic mounting plate",-3.6,1.1,0,"Clear plate on standoffs, spare space for a charge controller."],
+["Rubber feet",-4.6,-.1,-2.7,"Isolate the enclosure from vibration and cold ground."]];
+const info=document.getElementById('info');
+const els=L.map(l=>{const d=document.createElement('div');d.className='lb';d.textContent=l[0];d.tabIndex=0;
+ d.onclick=()=>{info.innerHTML='<b>'+l[0]+'</b><br>'+l[4]+'<br><small>Indicative spec, confirm before building.</small>';info.style.display='block';sway=false;$('bR').classList.remove('on');ctl.target.set(l[1],Math.max(l[2]*.6,.8),l[3]*.5)};
+ stage.appendChild(d);return{d,v:new THREE.Vector3(l[1],l[2],l[3])}});
+info.onclick=()=>info.style.display='none';
+
+// UI
+let flow=true,labs=true;
+$('bL').onclick=e=>{labs=!labs;e.target.classList.toggle('on',labs);els.forEach(x=>x.d.style.display=labs?'':'none')};
+$('bR').onclick=e=>{sway=!sway;e.target.classList.toggle('on',sway)};$('bH').onclick=()=>{ui.style.display='none'};stage.ondblclick=()=>{ui.style.display=ui.style.display==='none'?'':'none'};addEventListener('keydown',e=>{if(e.key==='h'||e.key==='H')stage.ondblclick()});
+$('bF').onclick=e=>{flow=!flow;e.target.classList.toggle('on',flow)};
+$('bX').onclick=e=>{const on=e.target.classList.toggle('on');walls[0].visible=!on;walls[1].visible=!on};
+let SW=1,SH=1;function size(){let h=innerHeight,w=h*9/16;if(w>innerWidth){w=innerWidth;h=w*16/9}SW=w;SH=h;stage.style.width=w+'px';stage.style.height=h+'px';stage.style.setProperty('--u',(w/36)+'px');R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener('resize',size);size();
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce)sway=false,$('bR').classList.remove('on');
+const clk=new THREE.Clock();
+(function loop(){requestAnimationFrame(loop);const dt=clk.getDelta();
+ if(flow)parts.forEach(p=>{p.t=(p.t+dt*.045)%1;p.m.position.copy(curve.getPointAt(p.t));p.m.visible=true});else parts.forEach(p=>p.m.visible=false);
+ if(flow)imp.rotation.y+=dt*6;
+ hm.emissiveIntensity=.5+Math.sin(clk.elapsedTime*1.5)*.15;
+ leds.forEach((l,i)=>l.material.emissiveIntensity=1.2+Math.sin(clk.elapsedTime*4+i*2));if(sway){const off=.18*Math.sin(clk.elapsedTime*.45),d=off-lastOff;lastOff=off;const t=ctl.target,dx=cam.position.x-t.x,dz=cam.position.z-t.z,c=Math.cos(d),sn=Math.sin(d);cam.position.x=t.x+dx*c-dz*sn;cam.position.z=t.z+dx*sn+dz*c}ctl.update();R.render(S,cam);
+ if(labs)els.forEach(x=>{const p=x.v.clone().project(cam);const vis=p.z<1;x.d.style.display=vis?'':'none';x.d.style.left=(p.x*.5+.5)*SW+'px';x.d.style.top=(-p.y*.5+.5)*SH+'px'});
+})();
+</script></body></html>
