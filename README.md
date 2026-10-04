@@ -1,4 +1,4 @@
-### 🛡️   High-Altitude Electronics Protection System
+# 🛡️   High-Altitude Electronics Protection System
 
 🚀 Overview
 
@@ -10,7 +10,7 @@ The proposed system creates a controlled internal environment around critical dr
 
 ---
 
-# ⚠️ Problem Statement
+## ⚠️ Problem Statement
 
 High-altitude drone electronics can face:
 
@@ -32,7 +32,7 @@ The system consists of multiple integrated layers:
 
 🌍 External Environment → 🛡️ Polycarbonate Enclosure → 🔥 Polyamide Thermal Layer → 💻 Electronics Chamber → ❄️ Closed-Loop Cooling → 📊 Monitoring & Control
 
-# 1. 🛡️ Polycarbonate Outer Enclosure
+### 1. 🛡️ Polycarbonate Outer Enclosure
 
 Polycarbonate forms the primary structural enclosure.
 
@@ -46,7 +46,7 @@ Functions:
 
 ---
 
-# 2. 🔥 Polyamide Thermal Layer
+### 2. 🔥 Polyamide Thermal Layer
 
 A polyamide-based thermal layer is incorporated inside the enclosure to reduce unwanted heat transfer between the external environment and the electronics.
 
@@ -59,7 +59,7 @@ Benefits:
 
 ---
 
-# 3. 💻 Protected Electronics Chamber
+### 3. 💻 Protected Electronics Chamber
 
 The central chamber houses sensitive drone electronics such as:
 
@@ -74,7 +74,7 @@ The components remain isolated from direct exposure to the external environment.
 
 ---
 
-# 4. ❄️ Closed-Loop Cooling System
+### 4. ❄️ Closed-Loop Cooling System
 
 A closed-loop cooling mechanism is used when the electronics generate excessive heat.
 
@@ -88,7 +88,7 @@ Because the system is closed-loop, the coolant continuously circulates without r
 
 ---
 
-# 5. 🔥 Heating System
+### 5. 🔥 Heating System
 
 During extremely low external temperatures, a controlled heating system maintains the internal electronics within a safe operating range.
 
@@ -98,7 +98,7 @@ The heating system works together with the insulation layer to minimize heat los
 
 ---
 
-🌡️ Thermal Management Architecture
+## 🌡️ Thermal Management Architecture
 
 The thermal management system operates in two primary modes:
 
@@ -118,7 +118,7 @@ This creates an adaptive thermal management system that responds to changing env
 
 ---
 
-# 📊 Monitoring & Control
+## 📊 Monitoring & Control
 
 Sensors continuously monitor the internal conditions of the enclosure.
 
@@ -130,13 +130,13 @@ The controller analyzes the sensor data and determines whether to:
 - 🟡 Generate a warning
 - 🔴 Trigger a protective response
 
-# 🔄 Control Flow
+## 🔄 Control Flow
 
 📡 Sensors → 📥 Data Acquisition → 🧠 Controller → 🔍 Condition Analysis → 🔥/❄️ Thermal Control → 🛡️ Electronics Protection
 
 ---
 
-# 📡 Communication & Data Monitoring
+## 📡 Communication & Data Monitoring
 
 A wireless communication module such as LoRa can transmit sensor information to an external monitoring station.
 
@@ -154,7 +154,7 @@ A dashboard can be developed using React.js + Node.js for real-time visualizatio
 
 ---
 
-# 🧱 Material Selection
+## 🧱 Material Selection
 
 🧩 Material| ⚙️ Function
 🛡️ Polycarbonate| Main structural enclosure
@@ -166,7 +166,7 @@ The selected materials provide a combination of low weight, mechanical protectio
 
 ---
 
-# ⚙️ System Working
+## ⚙️ System Working
 
 1. 🚁 Drone electronics are placed inside the protected enclosure.
 2. 📡 Sensors continuously measure temperature and environmental conditions.
@@ -179,7 +179,7 @@ The selected materials provide a combination of low weight, mechanical protectio
 
 ---
 
-# ✅ Feasibility
+## ✅ Feasibility
 
 - 🔧 Technically Feasible – Uses commercially available sensors, controllers, heaters, pumps, pipes, and enclosure materials.
 - ⚖️ Lightweight Construction – Polycarbonate and polymer-based materials help reduce additional drone payload.
@@ -188,7 +188,7 @@ The selected materials provide a combination of low weight, mechanical protectio
 
 ---
 
-# 💰 Viability
+## 💰 Viability
 
 - 💵 Cost-Effective – Uses accessible materials and components.
 - ♻️ Reusable – The enclosure can be reused across multiple missions.
@@ -197,7 +197,7 @@ The selected materials provide a combination of low weight, mechanical protectio
 
 ---
 
-# 🌟 Key Benefits
+## 🌟 Key Benefits
 
 - 🛡️ Protects sensitive electronics from extreme environmental conditions.
 - 🌡️ Maintains a more stable internal operating temperature.
@@ -209,7 +209,7 @@ The selected materials provide a combination of low weight, mechanical protectio
 
 ---
 
-# 🔮 Future Improvements
+## 🔮 Future Improvements
 
 Future versions can include:
 
@@ -224,7 +224,7 @@ Future versions can include:
 
 ---
 
-# 🏗️ Overall Architecture
+## 🏗️ Overall Architecture
 
              🌍 EXTREME HIGH-ALTITUDE ENVIRONMENT
                            │
@@ -275,7 +275,7 @@ Future versions can include:
                                      ▼
                               📊 DASHBOARD
 
-# 🎯 Conclusion
+## 🎯 Conclusion
 
 The proposed High-Altitude Electronics Protection System combines environmental protection, thermal insulation, active heating, closed-loop cooling, real-time sensing, and wireless monitoring into a compact drone-compatible architecture.
 
