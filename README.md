@@ -2,7 +2,7 @@
 
 🚀 Overview
 
-The High-Altitude Electronics Protection System is a protective enclosure designed to improve the reliability of drone electronics operating in extreme high-altitude environments.
+The High-Altitude Longevity Optimizer is a protective enclosure designed to improve the reliability of drone electronics operating in extreme high-altitude environments.
 
 At high altitudes, electronics can experience extreme cold, low atmospheric pressure, strong UV exposure, rapid temperature variations, and reduced natural heat dissipation.
 
