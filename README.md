@@ -1,4 +1,4 @@
-# 🛡️   High-Altitude Electronics Protection System
+# 🛡️  HALO - (High-Altitude Longevity Optimizer)
 
 🚀 Overview
 
