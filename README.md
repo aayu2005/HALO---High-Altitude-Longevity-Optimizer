@@ -1,4 +1,4 @@
-🛡️ High-Altitude Electronics Protection System
+🛡️ *High-Altitude Electronics Protection System*
 
 🚀 Overview
 
